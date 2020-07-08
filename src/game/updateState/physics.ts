@@ -1,9 +1,7 @@
-import { State } from "./state";
-import { compose, reduce, clamp, evolve } from "ramda";
-import curry from "lodash.curry";
-import { ActionType, Action } from "./actions";
-import { RigidBody, Shape } from "./types";
-import getHeight from "./helpers/getHeight";
+import { curry, clamp, evolve, compose } from "ramda"
+import getHeight from "../helpers/getHeight"
+import { RigidBody, Shape } from "../types"
+import { State } from "../state"
 
 const ACCELERATION = 9.8
 const RADIUS = 40
@@ -30,21 +28,4 @@ const physicSimulate = compose(
   playerSimulate,
 )
 
-
-const handlePhysics = curry((action: Action, state: State): State => {
-  if (action.type === ActionType.PhysicSimulation) {
-    return physicSimulate(state)
-  } else {
-    return state
-  }
-})
-
-const update = (actions: Action[], state: State): State => (
-  reduce(
-    (accState, action) => compose(handlePhysics(action))(accState),
-    state,
-    actions,
-  )
-)
-
-export default update
+export default physicSimulate

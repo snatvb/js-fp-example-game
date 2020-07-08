@@ -48,6 +48,8 @@ export type GFX = (
 )
 
 export type RigidBody = {
-  shape: Shape,
-  weight: number,
+  shape: Shape
+  weight: number
+  isTriggering: boolean
+  isKinematic: boolean
 }

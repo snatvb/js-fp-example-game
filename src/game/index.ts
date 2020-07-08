@@ -10,7 +10,7 @@ const actionsRequired = [
   physicSimulation,
 ]
 
-const run = (initState: State) => {
+const run = (ctx: CanvasRenderingContext2D) => {
   let stopped = false
   let reqId = Maybe.nothing<number>()
   let actions = [...actionsRequired]
@@ -24,7 +24,10 @@ const run = (initState: State) => {
     }
   }
 
-  loop(initState)
+  reqId = Maybe.of(requestAnimationFrame(() => {
+    const initState = createLevel(ctx, { x: 0, y: 0 })
+    loop(initState)
+  }))
 
   return () => {
     stopped = true
@@ -39,9 +42,6 @@ export const start = (canvas: HTMLCanvasElement) => {
       throw new Error('Cannot get 2d context of canvas')
     },
   })
-
-  const stop = run(createLevel(ctx, { x: 0, y: 0 }))
-
   const updateCanvasSize = () => {
     canvas.width = document.body.clientWidth
     canvas.height = document.body.clientHeight
@@ -50,6 +50,7 @@ export const start = (canvas: HTMLCanvasElement) => {
   const reqId = requestAnimationFrame(updateCanvasSize)
   window.addEventListener('resize', updateCanvasSize)
 
+  const stop = run(ctx)
   return () => {
     cancelAnimationFrame(reqId)
     window.removeEventListener('resize', updateCanvasSize)
