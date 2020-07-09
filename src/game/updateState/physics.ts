@@ -1,7 +1,7 @@
 import { curry, clamp, evolve, compose } from "ramda"
 import getHeight from "../helpers/getHeight"
-import { RigidBody, Shape } from "../types"
-import { State } from "../state"
+import { RigidBody, Shape, PhysicsObject, Rectangle, Circle } from "../types"
+import { State, Settings } from "../state"
 
 const ACCELERATION = 9.8
 const RADIUS = 40
@@ -27,5 +27,25 @@ const playerSimulate = (state: State) => {
 const physicSimulate = compose(
   playerSimulate,
 )
+
+const isRectangleCollide = (collide1: Rectangle, collide2: Rectangle) => {
+
+}
+
+const isCircleCollide = (collide1: Rectangle, collide2: Rectangle) => {
+
+}
+
+const isCollide = (collide1: Shape, collide2: Shape) => {
+
+}
+
+const xxx = curry((settings: Settings, physicsObjects: PhysicsObject[], { rigidbody, position }: PhysicsObject) => {
+
+})
+
+// const aaa = (state: State) => {
+
+// }
 
 export default physicSimulate

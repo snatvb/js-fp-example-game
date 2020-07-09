@@ -1,23 +1,20 @@
-import { Point, GFX, RigidBody, GFXType, ShapeType, Shape } from "./types"
-import { range, map, packList } from "./helpers/iters"
 import { compose } from "ramda"
 import curry from "lodash.curry"
+import { Maybe } from 'monad-maniac'
+import { Point, GFX, RigidBody, GFXType, ShapeType, Shape, Size, PhysicsObject } from "./types"
+import { range, map, packList } from "./helpers/iters"
 import randInt from "./helpers/randInt"
 
 export type Settings = {
   gravity: number
 }
 
-export type Player = {
-  position: Point
+export type Player = PhysicsObject & {
   gfx: GFX
-  rigidbody: RigidBody
 }
 
-export type Platform = {
-  position: Point
+export type Platform = PhysicsObject & {
   gfx: GFX
-  rigidbody: RigidBody
 }
 
 export type Platforms = Platform[]
@@ -29,24 +26,10 @@ export type State = {
   platforms: Platforms
 }
 
-const PLATFORM_HEIGHT = 20
-const PLATFORM_WIDTH_MIN = 50
-const PLATFORM_WIDTH_MAX = 300
-const randomizePlatform = curry((ctx: CanvasRenderingContext2D, maxY: number, num: number): Platform => {
-  const width = randInt(PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX)
-  const height = PLATFORM_HEIGHT
-  console.log(ctx.canvas.width)
-  const position = {
-    x: randInt(0, ctx.canvas.width - width),
-    y: randInt(0, maxY),
-  }
-
+const createPlatform = (position: Point, size: Size): Platform => {
   const shape: Shape = {
     type: ShapeType.Rectangle,
-    figure: {
-      width,
-      height,
-    },
+    figure: size,
   }
 
   return {
@@ -63,8 +46,23 @@ const randomizePlatform = curry((ctx: CanvasRenderingContext2D, maxY: number, nu
       weight: 1,
       isKinematic: true,
       isTriggering: false,
+      meta: Maybe.nothing(),
     },
   }
+}
+
+const PLATFORM_HEIGHT = 20
+const PLATFORM_WIDTH_MIN = 50
+const PLATFORM_WIDTH_MAX = 300
+const randomizePlatform = curry((ctx: CanvasRenderingContext2D, maxY: number, num: number): Platform => {
+  const width = randInt(PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX)
+  const height = PLATFORM_HEIGHT
+  const position = {
+    x: randInt(0, ctx.canvas.width - width),
+    y: randInt(0, maxY),
+  }
+
+  return createPlatform(position, { width, height })
 })
 
 const SPACE_Y = 200
@@ -74,6 +72,20 @@ const randomizePlatforms = (ctx: CanvasRenderingContext2D, count: number) => {
     packList,
     map(randomizePlatform(ctx, maxY)),
   )(range(1, count))
+}
+
+const FLOOR_HEIGHT = 20
+const createFloor = (ctx: CanvasRenderingContext2D) => {
+  const position = {
+    y: ctx.canvas.height - FLOOR_HEIGHT,
+    x: 0,
+  }
+  const size = {
+    width: ctx.canvas.width,
+    height: FLOOR_HEIGHT
+  }
+
+  return createPlatform(position, size)
 }
 
 export const createLevel = (ctx: CanvasRenderingContext2D, playerSpawnPoint: Point): State => {
@@ -101,11 +113,15 @@ export const createLevel = (ctx: CanvasRenderingContext2D, playerSpawnPoint: Poi
         weight: 1,
         isKinematic: false,
         isTriggering: false,
+        meta: Maybe.nothing(),
       },
     },
     settings: {
       gravity: 1000,
     },
-    platforms: randomizePlatforms(ctx, 10),
+    platforms: [
+      createFloor(ctx),
+      ...randomizePlatforms(ctx, 10)
+    ],
   }
 }
